@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
 import ColorPicker from '../ColorPicker/ColorPicker';
-import { Alert, TextField, Button } from '@mui/material';
+import { Alert, TextField, Button, FormHelperText } from '@mui/material';
 import ButtonUI from '../../UI/Button/Button';
 import { styled } from '@mui/material/styles';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import Selector from '../../UI/Selector/Selector';
 
 const style = {
     position: 'absolute',
@@ -57,6 +58,7 @@ const AddProductModalWindow = ({ open, onClose }) => {
         productCount: '',
         productPrice: '',
         selectedColors: [],
+        size: '',
         files: []
     };
 
@@ -71,14 +73,30 @@ const AddProductModalWindow = ({ open, onClose }) => {
             ...prev,
             selectedColors: colorsArray
         }));
-    }, [colorsArray]);
+
+        if (colorsArray.length > 0 && errors.selectedColors) {
+            setErrors(prev => ({
+                ...prev,
+                selectedColors: ''
+            }));
+            setShowError(false);
+        }
+    }, [colorsArray, errors.selectedColors]);
 
     useEffect(() => {
         setFormData(prev => ({
             ...prev,
             files: uploadedFiles
         }));
-    }, [uploadedFiles]);
+
+        if (uploadedFiles.length > 0 && errors.files) {
+            setErrors(prev => ({
+                ...prev,
+                files: ''
+            }));
+            setShowError(false);
+        }
+    }, [uploadedFiles, errors.files]);
 
     const resetForm = () => {
         setFormData(initialFormState);
@@ -86,8 +104,7 @@ const AddProductModalWindow = ({ open, onClose }) => {
         setUploadedFiles([]);
         setErrors({});
         setShowError(false);
-        
-        // ColorPicker komponentini qayta o'rnatish uchun
+
         if (document.querySelector('input[type="file"]')) {
             document.querySelector('input[type="file"]').value = '';
         }
@@ -102,6 +119,22 @@ const AddProductModalWindow = ({ open, onClose }) => {
     const getColorsArray = (colors) => {
         console.log('Kelgan ranglar:', colors);
         setColorsArray(colors);
+    };
+
+    const handleSizeChange = (selectedSize) => {
+        console.log('Tanlangan o\'lcham:', selectedSize);
+        setFormData(prev => ({
+            ...prev,
+            size: selectedSize
+        }));
+        
+        if (errors.size) {
+            setErrors(prev => ({
+                ...prev,
+                size: ''
+            }));
+            setShowError(false);
+        }
     };
 
     const handleInputChange = (field) => (event) => {
@@ -146,8 +179,13 @@ const AddProductModalWindow = ({ open, onClose }) => {
             isValid = false;
         }
 
+        if (!formData.size) {
+            newErrors.size = 'O\'lcham tanlanishi shart';
+            isValid = false;
+        }
+
         if (!formData.selectedColors || formData.selectedColors.length === 0) {
-            newErrors.selectedColors = 'Kamida bitta rang tanlanishi kerak';
+            newErrors.selectedColors = 'Kamida bitta rang tanlanishi shart';
             isValid = false;
         }
 
@@ -157,50 +195,40 @@ const AddProductModalWindow = ({ open, onClose }) => {
         }
 
         setErrors(newErrors);
+        setShowError(Object.keys(newErrors).length > 0);
         console.log('Validatsiya natijalari:', newErrors);
         return isValid;
     };
 
     const handleSubmit = async () => {
         console.log('Forma yuborilmoqda, joriy ma\'lumotlar:', formData);
-
+        
         if (validateForm()) {
             try {
                 const submitFormData = new FormData();
-                
+
                 submitFormData.append('productName', formData.productName);
                 submitFormData.append('productNumber', formData.productNumber);
                 submitFormData.append('productID', formData.productID);
                 submitFormData.append('productCount', formData.productCount);
                 submitFormData.append('productPrice', formData.productPrice);
+                submitFormData.append('size', formData.size);
                 submitFormData.append('selectedColors', JSON.stringify(formData.selectedColors));
-                
+
                 formData.files.forEach((file, index) => {
                     submitFormData.append(`file${index}`, file);
                 });
 
-                // API ga yuborish (misol uchun)
-                // const response = await fetch('your-api-endpoint', {
-                //     method: 'POST',
-                //     body: submitFormData
-                // });
-                
-                // const result = await response.json();
-                // console.log('API natijasi:', result);
-
                 console.log('Forma muvaffaqiyatli validatsiyadan o\'tdi');
-                resetForm(); // Forma yuborilgandan so'ng barcha maydonlarni tozalash
+                resetForm();
                 onClose();
             } catch (error) {
                 console.error('Xatolik yuz berdi:', error);
                 setShowError(true);
             }
-        } else {
-            setShowError(true);
         }
     };
 
-    // Modal yopilganda formani tozalash
     const handleClose = () => {
         resetForm();
         onClose();
@@ -216,7 +244,7 @@ const AddProductModalWindow = ({ open, onClose }) => {
             <Box sx={style}>
                 {showError && Object.keys(errors).length > 0 && (
                     <Alert severity="error" sx={{ mb: 2 }}>
-                        Iltimos, barcha maydonlarni to'ldiring
+                        Iltimos, barcha maydonlarni to'g'ri to'ldiring
                     </Alert>
                 )}
 
@@ -244,6 +272,21 @@ const AddProductModalWindow = ({ open, onClose }) => {
                     helperText={errors.productID}
                 />
 
+                <Box sx={{ width: "100%", margin: "10px 0px" }}>
+                    <Selector
+                        title="Size"
+                        menuItems={["L", "M", "S"]}
+                        value={formData.size}
+                        onChange={handleSizeChange}
+                        error={!!errors.size}
+                    />
+                    {errors.size && (
+                        <FormHelperText error>
+                            {errors.size}
+                        </FormHelperText>
+                    )}
+                </Box>
+
                 <EnhancedInput
                     label="Mahsulot soni"
                     value={formData.productCount}
@@ -260,9 +303,16 @@ const AddProductModalWindow = ({ open, onClose }) => {
                     helperText={errors.productPrice}
                 />
 
-                <ColorPicker 
-                    getColorsHandleFunc={getColorsArray}
-                />
+                <Box sx={{ width: "100%", margin: "10px 0px" }}>
+                    <ColorPicker
+                        getColorsHandleFunc={getColorsArray}
+                    />
+                    {errors.selectedColors && (
+                        <FormHelperText error>
+                            {errors.selectedColors}
+                        </FormHelperText>
+                    )}
+                </Box>
 
                 <Box sx={{ mt: 2, mb: 2 }}>
                     <Button
@@ -282,9 +332,9 @@ const AddProductModalWindow = ({ open, onClose }) => {
                         <span>{uploadedFiles.length} ta fayl yuklandi</span>
                     )}
                     {errors.files && (
-                        <Alert severity="error" sx={{ mt: 1 }}>
+                        <FormHelperText error>
                             {errors.files}
-                        </Alert>
+                        </FormHelperText>
                     )}
                 </Box>
 
