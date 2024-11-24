@@ -1,0 +1,13 @@
+.dashboard{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    &_cont{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+}

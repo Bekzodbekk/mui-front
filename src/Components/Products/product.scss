@@ -1,0 +1,12 @@
+.products{
+    .search_bar{
+        display: flex;
+        align-items: center;
+    }
+    .product_items{
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin: 0 10px;
+    }
+}
