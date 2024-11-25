@@ -7,6 +7,7 @@ import ButtonUI from '../../UI/Button/Button';
 import { styled } from '@mui/material/styles';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import Selector from '../../UI/Selector/Selector';
+import InputColorCount from '../../UI/Test/InputColorCount';
 
 const style = {
     position: 'absolute',
@@ -17,6 +18,8 @@ const style = {
     bgcolor: 'background.paper',
     border: '2px solid #000',
     boxShadow: 24,
+    maxHeight: '90vh',
+    overflowY: 'auto',
     pt: 2,
     px: 4,
     pb: 3,
@@ -34,9 +37,11 @@ const VisuallyHiddenInput = styled('input')({
     width: 1,
 });
 
+const API_ENDPOINT = 'https://localhost:9000/products'; // API manzilini o'zgartiring
+
 const EnhancedInput = ({ label, value, onChange, error, helperText }) => {
     return (
-        <Box sx={{ width: "100%", margin: "10px 0px" }}>
+        <Box sx={{width: "100%", margin: "8px 0px" }}>
             <TextField
                 fullWidth
                 label={label}
@@ -44,7 +49,18 @@ const EnhancedInput = ({ label, value, onChange, error, helperText }) => {
                 onChange={onChange}
                 error={error}
                 helperText={helperText}
-                required
+                size="small"
+                sx={{
+                    '& .MuiInputBase-root': {
+                        height: '40px'
+                    },
+                    '& .MuiInputLabel-root': {
+                        transform: 'translate(14px, 8px) scale(1)'
+                    },
+                    '& .MuiInputLabel-shrink': {
+                        transform: 'translate(14px, -9px) scale(0.75)'
+                    }
+                }}
             />
         </Box>
     );
@@ -57,7 +73,7 @@ const AddProductModalWindow = ({ open, onClose }) => {
         productID: '',
         productCount: '',
         productPrice: '',
-        selectedColors: [],
+        colorsCount: {},
         size: '',
         files: []
     };
@@ -67,21 +83,18 @@ const AddProductModalWindow = ({ open, onClose }) => {
     const [formData, setFormData] = useState(initialFormState);
     const [errors, setErrors] = useState({});
     const [showError, setShowError] = useState(false);
+    const [submitError, setSubmitError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
-        setFormData(prev => ({
-            ...prev,
-            selectedColors: colorsArray
-        }));
-
-        if (colorsArray.length > 0 && errors.selectedColors) {
+        if (colorsArray.length > 0 && errors.colorsCount) {
             setErrors(prev => ({
                 ...prev,
-                selectedColors: ''
+                colorsCount: ''
             }));
             setShowError(false);
         }
-    }, [colorsArray, errors.selectedColors]);
+    }, [colorsArray, errors.colorsCount]);
 
     useEffect(() => {
         setFormData(prev => ({
@@ -104,6 +117,7 @@ const AddProductModalWindow = ({ open, onClose }) => {
         setUploadedFiles([]);
         setErrors({});
         setShowError(false);
+        setSubmitError('');
 
         if (document.querySelector('input[type="file"]')) {
             document.querySelector('input[type="file"]').value = '';
@@ -116,9 +130,37 @@ const AddProductModalWindow = ({ open, onClose }) => {
         setUploadedFiles(files);
     };
 
+    const handleColorCountChange = (color, count) => {
+        setFormData(prev => ({
+            ...prev,
+            colorsCount: {
+                ...prev.colorsCount,
+                [color]: parseInt(count) || 0
+            }
+        }));
+
+        if (errors.colorsCount) {
+            setErrors(prev => ({
+                ...prev,
+                colorsCount: ''
+            }));
+            setShowError(false);
+        }
+    };
+
     const getColorsArray = (colors) => {
         console.log('Kelgan ranglar:', colors);
         setColorsArray(colors);
+        
+        const newColorsCount = {};
+        colors.forEach(color => {
+            newColorsCount[color] = formData.colorsCount[color] || 0;
+        });
+        
+        setFormData(prev => ({
+            ...prev,
+            colorsCount: newColorsCount
+        }));
     };
 
     const handleSizeChange = (selectedSize) => {
@@ -159,8 +201,6 @@ const AddProductModalWindow = ({ open, onClose }) => {
         const newErrors = {};
         let isValid = true;
 
-        console.log('Validatsiya boshlandi:', formData);
-
         if (!formData.productName.trim()) {
             newErrors.productName = 'Mahsulot nomi kiritilishi shart';
             isValid = false;
@@ -168,6 +208,9 @@ const AddProductModalWindow = ({ open, onClose }) => {
 
         if (!formData.productCount.trim()) {
             newErrors.productCount = 'Mahsulot soni kiritilishi shart';
+            isValid = false;
+        } else if (isNaN(formData.productCount) || parseInt(formData.productCount) <= 0) {
+            newErrors.productCount = 'Mahsulot soni musbat son bo\'lishi kerak';
             isValid = false;
         }
 
@@ -179,13 +222,24 @@ const AddProductModalWindow = ({ open, onClose }) => {
             isValid = false;
         }
 
+        if (!formData.productID.trim()) {
+            newErrors.productID = 'Mahsulot ID kiritilishi shart';
+            isValid = false;
+        } else if (isNaN(formData.productID) || parseInt(formData.productID) <= 0) {
+            newErrors.productID = 'Mahsulot ID musbat son bo\'lishi kerak';
+            isValid = false;
+        }
+
         if (!formData.size) {
             newErrors.size = 'O\'lcham tanlanishi shart';
             isValid = false;
         }
 
-        if (!formData.selectedColors || formData.selectedColors.length === 0) {
-            newErrors.selectedColors = 'Kamida bitta rang tanlanishi shart';
+        const totalColorsCount = Object.values(formData.colorsCount).reduce((sum, count) => 
+            sum + (parseInt(count) || 0), 0);
+        
+        if (totalColorsCount === 0 || colorsArray.length === 0) {
+            newErrors.colorsCount = 'Kamida bitta rang va miqdor kiritilishi shart';
             isValid = false;
         }
 
@@ -196,35 +250,57 @@ const AddProductModalWindow = ({ open, onClose }) => {
 
         setErrors(newErrors);
         setShowError(Object.keys(newErrors).length > 0);
-        console.log('Validatsiya natijalari:', newErrors);
         return isValid;
     };
 
     const handleSubmit = async () => {
-        console.log('Forma yuborilmoqda, joriy ma\'lumotlar:', formData);
+        setSubmitError('');
         
         if (validateForm()) {
+            setIsLoading(true);
             try {
                 const submitFormData = new FormData();
+                
+                // File upload
+                if (formData.files && formData.files.length > 0) {
+                    submitFormData.append('file', formData.files[0]);
+                }
 
-                submitFormData.append('productName', formData.productName);
-                submitFormData.append('productNumber', formData.productNumber);
-                submitFormData.append('productID', formData.productID);
-                submitFormData.append('productCount', formData.productCount);
-                submitFormData.append('productPrice', formData.productPrice);
-                submitFormData.append('size', formData.size);
-                submitFormData.append('selectedColors', JSON.stringify(formData.selectedColors));
+                // Create product request object according to proto schema
+                const productData = {
+                    name: formData.productName,
+                    unique_number: formData.productNumber,
+                    bag_id: parseInt(formData.productID),
+                    price: parseInt(formData.productPrice),
+                    size: formData.size,
+                    colors: formData.colorsCount,
+                    count: parseInt(formData.productCount)
+                };
 
-                formData.files.forEach((file, index) => {
-                    submitFormData.append(`file${index}`, file);
+                // Add product data as JSON string
+                submitFormData.append('product', JSON.stringify(productData));
+
+                const response = await fetch(`${API_ENDPOINT}`, {
+                    method: 'POST',
+                    body: submitFormData
                 });
 
-                console.log('Forma muvaffaqiyatli validatsiyadan o\'tdi');
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Server xatosi yuz berdi');
+                }
+
+                const result = await response.json();
+                console.log('Mahsulot muvaffaqiyatli qo\'shildi:', result);
+                
                 resetForm();
                 onClose();
             } catch (error) {
                 console.error('Xatolik yuz berdi:', error);
+                setSubmitError(error.message || 'Mahsulotni qo\'shishda xatolik yuz berdi');
                 setShowError(true);
+            } finally {
+                setIsLoading(false);
             }
         }
     };
@@ -241,15 +317,37 @@ const AddProductModalWindow = ({ open, onClose }) => {
             aria-labelledby="parent-modal-title"
             aria-describedby="parent-modal-description"
         >
-            <Box sx={style}>
-                {showError && Object.keys(errors).length > 0 && (
-                    <Alert severity="error" sx={{ mb: 2 }}>
+            <Box sx={{
+                ...style,
+                '&::-webkit-scrollbar': {
+                    width: '8px',
+                },
+                '&::-webkit-scrollbar-track': {
+                    background: '#f1f1f1',
+                    borderRadius: '4px',
+                },
+                '&::-webkit-scrollbar-thumb': {
+                    background: '#888',
+                    borderRadius: '4px',
+                },
+                '&::-webkit-scrollbar-thumb:hover': {
+                    background: '#555',
+                },
+            }}>
+                {(showError && Object.keys(errors).length > 0) && (
+                    <Alert severity="error" sx={{ mb: 1 }}>
                         Iltimos, barcha maydonlarni to'g'ri to'ldiring
                     </Alert>
                 )}
 
+                {submitError && (
+                    <Alert severity="error" sx={{ mb: 1 }}>
+                        {submitError}
+                    </Alert>
+                )}
+
                 <EnhancedInput
-                    label="Product name"
+                    label="Mahsulot nomi"
                     value={formData.productName}
                     onChange={handleInputChange('productName')}
                     error={!!errors.productName}
@@ -257,7 +355,7 @@ const AddProductModalWindow = ({ open, onClose }) => {
                 />
 
                 <EnhancedInput
-                    label="Product Uniq Number"
+                    label="Mahsulot unikal raqami"
                     value={formData.productNumber}
                     onChange={handleInputChange('productNumber')}
                     error={!!errors.productNumber}
@@ -265,16 +363,16 @@ const AddProductModalWindow = ({ open, onClose }) => {
                 />
 
                 <EnhancedInput
-                    label="Product ID"
+                    label="Mahsulot ID"
                     value={formData.productID}
                     onChange={handleInputChange('productID')}
                     error={!!errors.productID}
                     helperText={errors.productID}
                 />
 
-                <Box sx={{ width: "100%", margin: "10px 0px" }}>
+                <Box sx={{ width: "100%", margin: "8px 0px" }}>
                     <Selector
-                        title="Size"
+                        title="O'lcham"
                         menuItems={["L", "M", "S"]}
                         value={formData.size}
                         onChange={handleSizeChange}
@@ -286,7 +384,7 @@ const AddProductModalWindow = ({ open, onClose }) => {
                         </FormHelperText>
                     )}
                 </Box>
-
+                
                 <EnhancedInput
                     label="Mahsulot soni"
                     value={formData.productCount}
@@ -303,25 +401,34 @@ const AddProductModalWindow = ({ open, onClose }) => {
                     helperText={errors.productPrice}
                 />
 
-                <Box sx={{ width: "100%", margin: "10px 0px" }}>
+                <Box sx={{ width: "100%", margin: "8px 0px" }}>
                     <ColorPicker
                         getColorsHandleFunc={getColorsArray}
                     />
-                    {errors.selectedColors && (
+                    {errors.colorsCount && (
                         <FormHelperText error>
-                            {errors.selectedColors}
+                            {errors.colorsCount}
                         </FormHelperText>
                     )}
                 </Box>
 
-                <Box sx={{ mt: 2, mb: 2 }}>
+                {colorsArray.map((elm, idx) => (
+                    <InputColorCount 
+                        key={idx} 
+                        color={elm}
+                        onCountChange={handleColorCountChange}
+                    />
+                ))}
+
+                <Box sx={{ mt: 1, mb: 1 }}>
                     <Button
                         component="label"
                         variant="contained"
                         startIcon={<CloudUploadIcon />}
-                        sx={{ marginRight: 2 }}
+                        sx={{ marginRight: 2, height: '40px' }}
+                        disabled={isLoading}
                     >
-                        Upload files
+                        Fayl yuklash
                         <VisuallyHiddenInput
                             type="file"
                             onChange={handleFileUpload}
@@ -338,10 +445,11 @@ const AddProductModalWindow = ({ open, onClose }) => {
                     )}
                 </Box>
 
-                <Box sx={{ mt: 2 }}>
+                <Box sx={{ mt: 1 }}>
                     <ButtonUI
-                        content="Yangi mahsulot qo'shish"
+                        content={isLoading ? "Yuklanmoqda..." : "Yangi mahsulot qo'shish"}
                         onClick={handleSubmit}
+                        disabled={isLoading}
                     />
                 </Box>
             </Box>
@@ -349,4 +457,4 @@ const AddProductModalWindow = ({ open, onClose }) => {
     );
 };
 
-export default AddProductModalWindow;
+export default AddProductModalWindow

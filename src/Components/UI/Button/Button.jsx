@@ -4,7 +4,7 @@ import Button from '@mui/material/Button';
 
 export default function ButtonUI({ content, onClick, disabled }) {
   return (
-    <Box sx={{ '& button': { m: 1 } }}>
+    <Box >
       <div>
         <Button 
           variant="contained" 
