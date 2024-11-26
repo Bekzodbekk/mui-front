@@ -9,9 +9,9 @@ import { AppProvider } from '@toolpad/core/AppProvider';
 import { DashboardLayout } from '@toolpad/core/DashboardLayout';
 import { useDemoRouter } from '@toolpad/core/internal';
 import Dashboard from '../Dashboard/Dashboard';
-import Product from '../Products/Product';
 import Debts from '../Debts/Debts';
 import FinishProducts from '../FinishProduct/FinishProducts';
+import ProductPage from '../Products/ProductPage/ProductPage';
 
 const NAVIGATION = [
   {
@@ -61,7 +61,7 @@ function DashboardLayoutWithRouting(props) {
 
   const pageComponents = {
     '/dashboard': <Dashboard />,
-    '/products': <Product />,
+    '/products': <ProductPage />, // <Product />,
     '/debts': <Debts />,
     '/finish_products': <FinishProducts />,
   };

@@ -8,6 +8,7 @@ import { styled } from '@mui/material/styles';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import Selector from '../../UI/Selector/Selector';
 import InputColorCount from '../../UI/Test/InputColorCount';
+import { API_ADDPRODUCT } from "../../../constans/api.js"
 
 const style = {
     position: 'absolute',
@@ -37,11 +38,12 @@ const VisuallyHiddenInput = styled('input')({
     width: 1,
 });
 
-const API_ENDPOINT = 'https://localhost:9000/products'; // API manzilini o'zgartiring
+
+const API_ADDPRODUCT_ENDPOINT = API_ADDPRODUCT; // API manzilini o'zgartiring
 
 const EnhancedInput = ({ label, value, onChange, error, helperText }) => {
     return (
-        <Box sx={{width: "100%", margin: "8px 0px" }}>
+        <Box sx={{ width: "100%", margin: "8px 0px" }}>
             <TextField
                 fullWidth
                 label={label}
@@ -151,12 +153,12 @@ const AddProductModalWindow = ({ open, onClose }) => {
     const getColorsArray = (colors) => {
         console.log('Kelgan ranglar:', colors);
         setColorsArray(colors);
-        
+
         const newColorsCount = {};
         colors.forEach(color => {
             newColorsCount[color] = formData.colorsCount[color] || 0;
         });
-        
+
         setFormData(prev => ({
             ...prev,
             colorsCount: newColorsCount
@@ -169,7 +171,7 @@ const AddProductModalWindow = ({ open, onClose }) => {
             ...prev,
             size: selectedSize
         }));
-        
+
         if (errors.size) {
             setErrors(prev => ({
                 ...prev,
@@ -235,9 +237,9 @@ const AddProductModalWindow = ({ open, onClose }) => {
             isValid = false;
         }
 
-        const totalColorsCount = Object.values(formData.colorsCount).reduce((sum, count) => 
+        const totalColorsCount = Object.values(formData.colorsCount).reduce((sum, count) =>
             sum + (parseInt(count) || 0), 0);
-        
+
         if (totalColorsCount === 0 || colorsArray.length === 0) {
             newErrors.colorsCount = 'Kamida bitta rang va miqdor kiritilishi shart';
             isValid = false;
@@ -255,12 +257,12 @@ const AddProductModalWindow = ({ open, onClose }) => {
 
     const handleSubmit = async () => {
         setSubmitError('');
-        
+
         if (validateForm()) {
             setIsLoading(true);
             try {
                 const submitFormData = new FormData();
-                
+
                 // File upload
                 if (formData.files && formData.files.length > 0) {
                     submitFormData.append('file', formData.files[0]);
@@ -270,7 +272,7 @@ const AddProductModalWindow = ({ open, onClose }) => {
                 const productData = {
                     name: formData.productName,
                     unique_number: formData.productNumber,
-                    bag_id: parseInt(formData.productID),
+                    bag_id: formData.productID,
                     price: parseInt(formData.productPrice),
                     size: formData.size,
                     colors: formData.colorsCount,
@@ -280,7 +282,7 @@ const AddProductModalWindow = ({ open, onClose }) => {
                 // Add product data as JSON string
                 submitFormData.append('product', JSON.stringify(productData));
 
-                const response = await fetch(`${API_ENDPOINT}`, {
+                const response = await fetch(`${API_ADDPRODUCT_ENDPOINT}`, {
                     method: 'POST',
                     body: submitFormData
                 });
@@ -292,7 +294,7 @@ const AddProductModalWindow = ({ open, onClose }) => {
 
                 const result = await response.json();
                 console.log('Mahsulot muvaffaqiyatli qo\'shildi:', result);
-                
+
                 resetForm();
                 onClose();
             } catch (error) {
@@ -384,7 +386,7 @@ const AddProductModalWindow = ({ open, onClose }) => {
                         </FormHelperText>
                     )}
                 </Box>
-                
+
                 <EnhancedInput
                     label="Mahsulot soni"
                     value={formData.productCount}
@@ -413,8 +415,8 @@ const AddProductModalWindow = ({ open, onClose }) => {
                 </Box>
 
                 {colorsArray.map((elm, idx) => (
-                    <InputColorCount 
-                        key={idx} 
+                    <InputColorCount
+                        key={idx}
                         color={elm}
                         onCountChange={handleColorCountChange}
                     />
