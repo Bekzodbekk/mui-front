@@ -5,7 +5,6 @@ import CardMedia from '@mui/material/CardMedia';
 import Typography from '@mui/material/Typography';
 import CardActionArea from '@mui/material/CardActionArea';
 import Box from '@mui/material/Box';
-import { useDemoRouter } from '@toolpad/core/internal';
 import { useNavigate } from 'react-router-dom';
 
 const ProductItem = ({ id ,image_url, name, size, price, unique_number, colors, count }) => {
