@@ -5,23 +5,29 @@ import CardMedia from '@mui/material/CardMedia';
 import Typography from '@mui/material/Typography';
 import CardActionArea from '@mui/material/CardActionArea';
 import Box from '@mui/material/Box';
+import { useDemoRouter } from '@toolpad/core/internal';
+import { useNavigate } from 'react-router-dom';
 
-const ProductItem = ({ image_url, name, size, price, unique_number, colors, count }) => {
+const ProductItem = ({ id ,image_url, name, size, price, unique_number, colors, count }) => {
   // Placeholder rasm URL-i
   const placeholderImage = "https://placehold.co/200x200";
+  const navigate = useNavigate()
 
+  const handleNavigate = () => {
+    navigate(`/product/${id}`)
+  }
   return (
-    <Card sx={{ width: "100%", mb: 2 }}>
-      <CardActionArea>
+    <Card sx={{ width: "100%", mb: 2 }} >
+      <CardActionArea onClick={handleNavigate}>
         <Box sx={{ display: "flex", alignItems: "center", gap: "50px" }}>
           <CardMedia
             component="img"
             sx={{
               marginLeft: "20px",
-              width: "200px", 
-              height: "200px", 
+              width: "200px",
+              height: "200px",
               borderRadius: "5px",
-              objectFit: "cover" 
+              objectFit: "cover"
             }}
             image={image_url || placeholderImage}
             alt={name}

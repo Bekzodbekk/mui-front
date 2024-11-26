@@ -47,6 +47,7 @@ const Product = () => {
 
       <div className="product_items">
         <ProductItem
+          id={3}
           key={1}
           image_url={require("../../Assets/image.png")} 
           name={"Cantlor"}

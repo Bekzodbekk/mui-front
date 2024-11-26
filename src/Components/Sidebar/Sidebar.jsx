@@ -13,6 +13,7 @@ import Debts from '../Debts/Debts';
 import FinishProducts from '../FinishProduct/FinishProducts';
 import ProductPage from '../Products/ProductPage/ProductPage';
 import Product from '../Products/Product';
+import ProductRoute from '../Products/ProductRoute/ProductRoute';
 
 const NAVIGATION = [
   {
@@ -62,9 +63,11 @@ function DashboardLayoutWithRouting(props) {
 
   const pageComponents = {
     '/dashboard': <Dashboard />,
-    '/products': <Product />, // <Product />,
+    '/products': <ProductRoute />, // <Product />,
     '/debts': <Debts />,
     '/finish_products': <FinishProducts />,
+
+    // '/product_info': <ProductPage />,
   };
 
   return (
