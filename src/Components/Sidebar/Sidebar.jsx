@@ -11,8 +11,6 @@ import { useDemoRouter } from '@toolpad/core/internal';
 import Dashboard from '../Dashboard/Dashboard';
 import Debts from '../Debts/Debts';
 import FinishProducts from '../FinishProduct/FinishProducts';
-import ProductPage from '../Products/ProductPage/ProductPage';
-import Product from '../Products/Product';
 import ProductRoute from '../Products/ProductRoute/ProductRoute';
 
 const NAVIGATION = [

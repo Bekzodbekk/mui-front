@@ -57,7 +57,7 @@ const Product = () => {
           colors={"red"}
           count={10}
           />
-        {/* {loading && <Typography>Yuklanmoqda...</Typography>}
+        {loading && <Typography>Yuklanmoqda...</Typography>}
         {error && <Typography color="error">{error}</Typography>}
         {products.length === 0 && !loading && !error && (
           <Typography>Mahsulotlar topilmadi</Typography>
@@ -73,7 +73,7 @@ const Product = () => {
             colors={product.colors}
             count={product.count}
           />
-        ))} */}
+        ))}
       </div>
 
       <AddProductModalWindow open={isModalOpen} onClose={handleCloseModal} />
