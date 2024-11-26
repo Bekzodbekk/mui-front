@@ -19,11 +19,11 @@ const Product = () => {
       setLoading(true);
       setError(null);
       const response = await fetch(`https://localhost:9000/products?search=${searchTerm}`);
-      
+
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
-      
+
       const data = await response.json();
       setProducts(data.products || []); // Accessing the products array from response
     } catch (err) {
@@ -44,9 +44,19 @@ const Product = () => {
       <div className="search_bar">
         <SearchBar onSearch={searchProducts} onOpenModal={handleOpenModal} />
       </div>
-      
+
       <div className="product_items">
-        {loading && <Typography>Yuklanmoqda...</Typography>}
+        <ProductItem
+          key={1}
+          image_url={require("../../Assets/image.png")} 
+          name={"Cantlor"}
+          size={"L"}
+          price={"120000"}
+          unique_number={1}
+          colors={"red"}
+          count={10}
+          />
+        {/* {loading && <Typography>Yuklanmoqda...</Typography>}
         {error && <Typography color="error">{error}</Typography>}
         {products.length === 0 && !loading && !error && (
           <Typography>Mahsulotlar topilmadi</Typography>
@@ -62,7 +72,7 @@ const Product = () => {
             colors={product.colors}
             count={product.count}
           />
-        ))}
+        ))} */}
       </div>
 
       <AddProductModalWindow open={isModalOpen} onClose={handleCloseModal} />
