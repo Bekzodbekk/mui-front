@@ -12,6 +12,7 @@ import Dashboard from '../Dashboard/Dashboard';
 import Debts from '../Debts/Debts';
 import FinishProducts from '../FinishProduct/FinishProducts';
 import ProductPage from '../Products/ProductPage/ProductPage';
+import Product from '../Products/Product';
 
 const NAVIGATION = [
   {
@@ -61,7 +62,7 @@ function DashboardLayoutWithRouting(props) {
 
   const pageComponents = {
     '/dashboard': <Dashboard />,
-    '/products': <ProductPage />, // <Product />,
+    '/products': <Product />, // <Product />,
     '/debts': <Debts />,
     '/finish_products': <FinishProducts />,
   };
