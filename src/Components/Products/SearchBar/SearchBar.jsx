@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { TextField, InputAdornment, Button } from '@mui/material';
 
-const SearchBar = ({ onSearch, onOpenModal }) => {
+const SearchBar = ({ onSearch, onOpenModal, title }) => {
   const [searchValue, setSearchValue] = useState('');
 
   const handleSearch = (e) => {
@@ -16,7 +16,7 @@ const SearchBar = ({ onSearch, onOpenModal }) => {
       placeholder="Search Bags"
       value={searchValue}
       onChange={handleSearch}
-      sx={{ padding: '10px' }}
+      sx={{ padding: '10px 0px' }}
       InputProps={{
         endAdornment: (
           <InputAdornment position="end">
@@ -25,7 +25,7 @@ const SearchBar = ({ onSearch, onOpenModal }) => {
               color="primary"
               onClick={onOpenModal}
             >
-              Add Product
+              {title}
             </Button>
           </InputAdornment>
         ),

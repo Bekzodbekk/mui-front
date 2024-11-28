@@ -15,6 +15,7 @@ const ProductItem = ({ id ,image_url, name, size, price, unique_number, colors, 
   const handleNavigate = () => {
     navigate(`/product/${id}`)
   }
+  
   return (
     <Card sx={{ width: "100%", mb: 2 }} >
       <CardActionArea onClick={handleNavigate}>

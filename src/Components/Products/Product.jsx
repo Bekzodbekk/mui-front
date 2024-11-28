@@ -19,7 +19,8 @@ const Product = () => {
       setLoading(true);
       setError(null);
       const response = await fetch(`https://localhost:9000/products?search=${searchTerm}`);
-
+      console.log(response);
+      
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
@@ -42,7 +43,11 @@ const Product = () => {
   return (
     <div className="products">
       <div className="search_bar">
-        <SearchBar onSearch={searchProducts} onOpenModal={handleOpenModal} />
+        <SearchBar
+         onSearch={searchProducts}
+          onOpenModal={handleOpenModal}
+          title={"Add Product"}
+          />
       </div>
 
       <div className="product_items">
@@ -64,6 +69,7 @@ const Product = () => {
         )}
         {products.map((product) => (
           <ProductItem
+            id={product.id}
             key={product.id}
             image_url={product.image_url}
             name={product.name}

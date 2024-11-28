@@ -14,80 +14,93 @@ import FinishProducts from '../FinishProduct/FinishProducts';
 import ProductRoute from '../Products/ProductRoute/ProductRoute';
 
 const NAVIGATION = [
-  {
+ {
     segment: 'dashboard',
     title: 'Dashboard',
     icon: <DashboardIcon />,
-  },
-  {
+    onClick: (router) => {
+        // Explicitly set to root path and reset any query parameters
+        window.history.pushState(null, '', '/');
+        router.navigate('/');
+    }
+ },
+ {
     segment: 'products',
     title: 'Products',
     icon: <WidgetsIcon />,
-  },
-  {
+ },
+ {
     segment: 'debts',
     title: 'Debts',
     icon: <BookIcon />,
-  },
-  {
+ },
+ {
     segment: 'finish_products',
     title: 'Finish Product',
     icon: <ProductionQuantityLimitsIcon />,
-  },
+ },
 ];
 
 const demoTheme = createTheme({
-  cssVariables: {
-    colorSchemeSelector: 'data-toolpad-color-scheme',
-  },
-  colorSchemes: { light: true, dark: true },
-  breakpoints: {
-    values: {
-      xs: 0,
-      sm: 600,
-      md: 600,
-      lg: 1200,
-      xl: 1536,
+    cssVariables: {
+        colorSchemeSelector: 'data-toolpad-color-scheme',
     },
-  },
+    colorSchemes: { light: true, dark: true },
+    breakpoints: {
+        values: {
+            xs: 0,
+            sm: 600,
+            md: 600,
+            lg: 1200,
+            xl: 1536,
+        },
+    },
 });
 
-
-
 function DashboardLayoutWithRouting(props) {
-  const { window } = props;
-  const router = useDemoRouter('/dashboard');
-  const demoWindow = window !== undefined ? window() : undefined;
+    const { window: windowProp } = props;
+    const router = useDemoRouter('/dashboard');
+    const demoWindow = windowProp !== undefined ? windowProp() : undefined;
 
-  const pageComponents = {
-    '/dashboard': <Dashboard />,
-    '/products': <ProductRoute />, // <Product />,
-    '/debts': <Debts />,
-    '/finish_products': <FinishProducts />,
+    const pageComponents = {
+        '/dashboard': <Dashboard />,
+        '/products': <ProductRoute />,
+        '/debts': <Debts />,
+        '/finish_products': <FinishProducts />,
+    };
 
-    // '/product_info': <ProductPage />,
-  };
+    // Modify navigation to pass router to onClick handlers
+    const enhancedNavigation = NAVIGATION.map(navItem => ({
+        ...navItem,
+        ...(navItem.onClick ? { 
+            onClick: () => {
+                // Ensure both browser history and router are reset
+                window.history.pushState(null, '', '/');
+                navItem.onClick(router);
+            } 
+        } : {})
+    }));
 
-  return (
-    <AppProvider
-      navigation={NAVIGATION}
-      branding={{
-        logo: <img src="https://mui.com/static/logo.png" alt="MUI logo" />,
-        title: 'MUI',
-      }}
-      router={router}
-      theme={demoTheme}
-      window={demoWindow}
-    >
-      <DashboardLayout>
-        {pageComponents[router.pathname] || <Dashboard />}
-      </DashboardLayout>
-    </AppProvider>
-  );
+    return (
+        <AppProvider
+            navigation={enhancedNavigation}
+            branding={{
+                logo: <img src="https://mui.com/static/logo.png" alt="MUI logo" />,
+                title: 'MUI',
+            }}
+            router={router}
+            theme={demoTheme}
+            window={demoWindow}
+        >
+            <DashboardLayout>
+                {pageComponents[router.pathname] || <Dashboard />}
+            </DashboardLayout>
+        </AppProvider>
+    );
 }
 
 DashboardLayoutWithRouting.propTypes = {
-  window: PropTypes.func,
+    window: PropTypes.func,
 };
 
 export default DashboardLayoutWithRouting;
